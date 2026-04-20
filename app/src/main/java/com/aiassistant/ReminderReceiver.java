@@ -22,6 +22,9 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager == null) {
+            return;
+        }
 
         // Create channel (required for Android 8+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

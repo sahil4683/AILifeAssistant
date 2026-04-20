@@ -119,7 +119,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             btnAction.setText(task.getSuggestedAction() != null ? task.getSuggestedAction() : "Take Action");
             btnAction.setOnClickListener(v -> {
                 int pos = getAdapterPosition();
-                if (pos != RecyclerView.NO_ID) {
+                if (pos != RecyclerView.NO_POSITION) {
                     listener.onActionTaken(task, pos);
                 }
             });
@@ -127,7 +127,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             // Snooze button
             btnSnooze.setOnClickListener(v -> {
                 int pos = getAdapterPosition();
-                if (pos != RecyclerView.NO_ID) {
+                if (pos != RecyclerView.NO_POSITION) {
                     listener.onRemindLater(task, pos);
                 }
             });
