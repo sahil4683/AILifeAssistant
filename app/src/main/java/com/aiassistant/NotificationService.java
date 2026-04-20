@@ -96,16 +96,16 @@ public class NotificationService extends NotificationListenerService {
         switch (result.getCategory()) {
             case AIClassifier.CATEGORY_BILL:
                 String amount = result.getAmount() != null ? " (" + result.getAmount() + ")" : "";
-                return "💰 Bill Due" + amount;
+                return "Bill Due" + amount;
             case AIClassifier.CATEGORY_MEETING:
                 String time = result.getTime() != null ? " at " + result.getTime() : "";
-                return "📅 Meeting" + time;
+                return "Meeting" + time;
             case AIClassifier.CATEGORY_REMINDER:
-                return "🔔 Reminder";
+                return "Reminder";
             case AIClassifier.CATEGORY_PERSONAL:
-                return "💬 Message";
+                return "Message";
             default:
-                return "📋 Task";
+                return "Task";
         }
     }
 

@@ -45,7 +45,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="← Ignore"
+                android:text="Ignore"
                 android:textColor="@color/text_hint"
                 android:textSize="11sp" />
 
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="end"
-                android:text="Done →"
+                android:text="Done"
                 android:textColor="@color/text_hint"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -88,7 +88,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🎉"
+                android:text="Ready"
                 android:textSize="64sp" />
 
             <TextView

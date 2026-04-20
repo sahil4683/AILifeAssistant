@@ -29,7 +29,7 @@ public class ActionEngine {
                 setReminder(task);
                 break;
             default:
-                Toast.makeText(context, "✓ Task noted!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Task noted", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -71,7 +71,7 @@ public class ActionEngine {
 
         if (alarmManager != null) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent);
-            Toast.makeText(context, "⏰ Payment reminder set!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Payment reminder set", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -91,7 +91,7 @@ public class ActionEngine {
 
         if (alarmManager != null) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent);
-            Toast.makeText(context, "🔔 Reminder set for 30 mins!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Reminder set for 30 minutes", Toast.LENGTH_SHORT).show();
         }
     }
 

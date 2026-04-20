@@ -84,7 +84,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
             // Truncate original message
             String msg = task.getOriginalMessage();
-            if (msg != null && msg.length() > 100) msg = msg.substring(0, 100) + "…";
+            if (msg != null && msg.length() > 100) msg = msg.substring(0, 100) + "...";
             tvMessage.setText(msg);
 
             // Category badge
@@ -95,8 +95,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             // Meta info (amount, date, time)
             StringBuilder meta = new StringBuilder();
             if (task.getAmount() != null) meta.append(task.getAmount()).append("  ");
-            if (task.getDate() != null) meta.append("📅 ").append(task.getDate()).append("  ");
-            if (task.getTime() != null) meta.append("⏰ ").append(task.getTime());
+            if (task.getDate() != null) meta.append("Date: ").append(task.getDate()).append("  ");
+            if (task.getTime() != null) meta.append("Time: ").append(task.getTime());
             tvMeta.setText(meta.toString().trim());
             tvMeta.setVisibility(meta.length() > 0 ? View.VISIBLE : View.GONE);
 
@@ -134,13 +134,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         }
 
         private String getCategoryLabel(String category) {
-            if (category == null) return "📋 Task";
+            if (category == null) return "Task";
             switch (category) {
-                case AIClassifier.CATEGORY_BILL: return "💰 Bill";
-                case AIClassifier.CATEGORY_MEETING: return "📅 Meeting";
-                case AIClassifier.CATEGORY_REMINDER: return "🔔 Reminder";
-                case AIClassifier.CATEGORY_PERSONAL: return "💬 Personal";
-                default: return "📋 Task";
+                case AIClassifier.CATEGORY_BILL: return "Bill";
+                case AIClassifier.CATEGORY_MEETING: return "Meeting";
+                case AIClassifier.CATEGORY_REMINDER: return "Reminder";
+                case AIClassifier.CATEGORY_PERSONAL: return "Personal";
+                default: return "Task";
             }
         }
 

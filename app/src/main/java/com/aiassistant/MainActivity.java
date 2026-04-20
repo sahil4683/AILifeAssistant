@@ -1,7 +1,10 @@
 package com.aiassistant;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -12,20 +15,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.google.android.material.appbar.MaterialToolbar;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskActionListener {
     private static final String TAG = "MainActivity";
+    private static final int NOTIFICATION_PERMISSION_REQUEST = 1001;
 
     private RecyclerView recyclerView;
     private TaskAdapter taskAdapter;
     private TaskDatabase taskDatabase;
     private LinearLayout emptyView;
+    private MaterialToolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +41,12 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
             setContentView(R.layout.activity_main);
 
             taskDatabase = new TaskDatabase(this);
+            toolbar = findViewById(R.id.toolbar);
             recyclerView = findViewById(R.id.recyclerView);
             emptyView = findViewById(R.id.emptyView);
 
             setupRecyclerView();
+            requestPostNotificationsPermissionIfNeeded();
             checkNotificationPermission();
             loadTasks();
         } catch (Exception e) {
@@ -96,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
             taskAdapter.setTasks(tasks);
             emptyView.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
             recyclerView.setVisibility(tasks.isEmpty() ? View.GONE : View.VISIBLE);
+            updateToolbar(tasks.size());
         } catch (Exception e) {
             Log.e(TAG, "Failed to load tasks, resetting local database", e);
             deleteDatabase(TaskDatabase.DB_NAME);
@@ -103,8 +113,22 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
             taskAdapter.setTasks(java.util.Collections.emptyList());
             emptyView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
+            updateToolbar(0);
             Toast.makeText(this, "App data was reset after a startup error.", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void requestPostNotificationsPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                NOTIFICATION_PERMISSION_REQUEST);
     }
 
     private void markTaskDone(TaskItem task, int position) {
@@ -112,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
         taskDatabase.recordUserAction(task.getCategory(), "done");
         taskAdapter.removeTask(position);
         checkEmpty();
-        Snackbar.make(recyclerView, "✓ Marked as done", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(recyclerView, "Marked as done", Snackbar.LENGTH_SHORT).show();
     }
 
     private void ignoreTask(TaskItem task, int position) {
@@ -129,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
         taskDatabase.recordUserAction(task.getCategory(), "snoozed");
         taskAdapter.removeTask(position);
         checkEmpty();
-        Snackbar.make(recyclerView, "⏰ Reminded in 1 hour", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(recyclerView, "Reminder set for 1 hour", Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -146,6 +170,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
         boolean isEmpty = taskAdapter.getItemCount() == 0;
         emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        updateToolbar(taskAdapter.getItemCount());
     }
 
     @Override
@@ -181,5 +206,18 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
         root.addView(message);
         setContentView(root);
         Toast.makeText(this, "Opened in safe mode after startup failure.", Toast.LENGTH_LONG).show();
+    }
+
+    private void updateToolbar(int taskCount) {
+        if (toolbar == null) {
+            return;
+        }
+        if (taskCount == 0) {
+            toolbar.setSubtitle("Waiting for tasks from notifications");
+        } else if (taskCount == 1) {
+            toolbar.setSubtitle("1 task to review");
+        } else {
+            toolbar.setSubtitle(taskCount + " tasks to review");
+        }
     }
 }

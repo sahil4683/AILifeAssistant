@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="Bill Due (₹1200)"
+            android:text="Bill Due (Rs 1200)"
             android:textColor="@color/text_primary"
             android:textSize="17sp"
             android:textStyle="bold" />
@@ -70,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Your electricity bill of ₹1200 is due tomorrow."
+            android:text="Your electricity bill of Rs 1200 is due tomorrow."
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
             android:maxLines="2"
@@ -110,7 +110,7 @@
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:text="⏰ Later"
+                android:text="Later"
                 android:textSize="12sp"
                 app:strokeColor="@color/accent"
                 android:textColor="@color/accent" />
