@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.aiassistant">
 
-    <!-- Permissions -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
@@ -20,7 +19,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AILifeAssistant">
 
-        <!-- Main Screen -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -31,7 +37,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Notification Listener Service -->
         <service
             android:name=".NotificationService"
             android:exported="true"
@@ -42,13 +47,31 @@
             </intent-filter>
         </service>
 
-        <!-- Reminder Alarm Receiver -->
         <receiver
             android:name=".ReminderReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".DailyDigestReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".BootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".TaskWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/task_widget_info" />
         </receiver>
 
     </application>

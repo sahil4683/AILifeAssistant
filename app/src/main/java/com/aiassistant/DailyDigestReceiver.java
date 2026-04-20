@@ -9,23 +9,16 @@ import android.content.Intent;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
-public class ReminderReceiver extends BroadcastReceiver {
+public class DailyDigestReceiver extends BroadcastReceiver {
 
-    private static final String CHANNEL_ID = "ai_assistant_reminders";
+    private static final String CHANNEL_ID = "ai_assistant_digest";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent == null || !intent.hasExtra("task_title")) {
+        TaskDatabase taskDatabase = new TaskDatabase(context);
+        int pendingCount = taskDatabase.getPendingTaskCount();
+        if (pendingCount == 0) {
             return;
-        }
-
-        String title = intent.getStringExtra("task_title");
-        String message = intent.getStringExtra("task_message");
-        if (title == null) {
-            title = "AI Assistant Reminder";
-        }
-        if (message == null) {
-            message = "You have a pending task.";
         }
 
         NotificationManager manager =
@@ -37,28 +30,31 @@ public class ReminderReceiver extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "AI Assistant Reminders",
-                    NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("Reminders from your AI Life Assistant");
+                    "AI Assistant Digest",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("Daily summary of pending tasks");
             manager.createNotificationChannel(channel);
         }
 
         Intent launchIntent = new Intent(context, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context,
-                4011,
+                2010,
                 launchIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        String content = pendingCount == 1
+                ? "You have 1 task waiting today."
+                : "You have " + pendingCount + " tasks waiting today.";
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setContentTitle("Daily task digest")
+                .setContentText(content)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
                 .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
-        manager.notify((int) System.currentTimeMillis(), builder.build());
+        manager.notify(2011, builder.build());
     }
 }

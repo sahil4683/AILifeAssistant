@@ -17,7 +17,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Top Row: Category Badge + Source -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,15 +27,30 @@
                 android:id="@+id/tvCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/badge_bg"
                 android:paddingStart="10dp"
+                android:paddingTop="4dp"
                 android:paddingEnd="10dp"
-                android:paddingTop="3dp"
-                android:paddingBottom="3dp"
+                android:paddingBottom="4dp"
                 android:text="Bill"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
-                android:textStyle="bold"
-                android:background="@drawable/badge_bg" />
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@color/meta_bg"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="4dp"
+                android:text="Completed"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                android:visibility="gone" />
 
             <View
                 android:layout_width="0dp"
@@ -50,10 +64,8 @@
                 android:text="via SMS"
                 android:textColor="@color/text_hint"
                 android:textSize="11sp" />
-
         </LinearLayout>
 
-        <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="match_parent"
@@ -64,19 +76,17 @@
             android:textSize="17sp"
             android:textStyle="bold" />
 
-        <!-- Original Message -->
         <TextView
             android:id="@+id/tvMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="3"
             android:text="Your electricity bill of Rs 1200 is due tomorrow."
             android:textColor="@color/text_secondary"
-            android:textSize="13sp"
-            android:maxLines="2"
-            android:ellipsize="end" />
+            android:textSize="13sp" />
 
-        <!-- Meta Info: Amount, Date, Time -->
         <TextView
             android:id="@+id/tvMeta"
             android:layout_width="wrap_content"
@@ -84,22 +94,21 @@
             android:layout_marginTop="8dp"
             android:background="@color/meta_bg"
             android:paddingStart="8dp"
-            android:paddingEnd="8dp"
             android:paddingTop="4dp"
+            android:paddingEnd="8dp"
             android:paddingBottom="4dp"
             android:textColor="@color/text_primary"
             android:textSize="12sp"
-            android:visibility="visible" />
+            android:visibility="gone" />
 
-        <!-- Divider -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="12dp"
             android:background="@color/divider" />
 
-        <!-- Action Buttons -->
         <LinearLayout
+            android:id="@+id/actionRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -112,8 +121,8 @@
                 android:layout_height="36dp"
                 android:text="Later"
                 android:textSize="12sp"
-                app:strokeColor="@color/accent"
-                android:textColor="@color/accent" />
+                android:textColor="@color/accent"
+                app:strokeColor="@color/accent" />
 
             <View
                 android:layout_width="0dp"
@@ -125,12 +134,10 @@
                 style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:text="Set Reminder"
+                android:text="Take action"
                 android:textSize="12sp"
                 app:backgroundTint="@color/accent" />
-
         </LinearLayout>
-
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

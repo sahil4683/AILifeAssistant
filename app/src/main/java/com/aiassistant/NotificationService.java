@@ -13,51 +13,55 @@ public class NotificationService extends NotificationListenerService {
     private static final String TAG = "AIAssistant";
     private AIClassifier classifier;
     private TaskDatabase taskDatabase;
+    private SettingsManager settingsManager;
 
     @Override
     public void onCreate() {
         super.onCreate();
         classifier = new AIClassifier(this);
         taskDatabase = new TaskDatabase(this);
+        settingsManager = new SettingsManager(this);
     }
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         try {
             String packageName = sbn.getPackageName();
-
-            // Skip system/self notifications
-            if (packageName.equals(getPackageName())) return;
-            if (packageName.equals("android")) return;
-            if (packageName.equals("com.android.systemui")) return;
+            if (packageName.equals(getPackageName())
+                    || packageName.equals("android")
+                    || packageName.equals("com.android.systemui")) {
+                return;
+            }
 
             Notification notification = sbn.getNotification();
             Bundle extras = notification.extras;
+            if (extras == null) {
+                return;
+            }
 
             String title = extras.getString(Notification.EXTRA_TITLE, "");
             String text = extras.getString(Notification.EXTRA_TEXT, "");
             String bigText = extras.getString(Notification.EXTRA_BIG_TEXT, "");
-
-            // Use big text if available for more context
             String content = (bigText != null && !bigText.isEmpty()) ? bigText : text;
-
-            if (title == null || title.isEmpty()) return;
-            if (content == null || content.isEmpty()) return;
+            if (title == null || title.isEmpty() || content == null || content.isEmpty()) {
+                return;
+            }
 
             String appName = getAppName(packageName);
+            if (!settingsManager.isAppAllowed(appName)) {
+                return;
+            }
+
             String fullMessage = title + " " + content;
-
-            Log.d(TAG, "Processing notification from: " + appName + " | " + title);
-
-            // Run classification
             ClassificationResult result = classifier.classify(fullMessage, appName);
+            if (AIClassifier.CATEGORY_SPAM.equals(result.getCategory())) {
+                return;
+            }
+            if (AIClassifier.CATEGORY_PERSONAL.equals(result.getCategory())
+                    && result.getConfidence() < 0.6f) {
+                return;
+            }
 
-            // Only surface non-spam results
-            if (result.getCategory().equals(AIClassifier.CATEGORY_SPAM)) return;
-            if (result.getCategory().equals(AIClassifier.CATEGORY_PERSONAL) &&
-                result.getConfidence() < 0.6f) return;
-
-            // Create and save task
             TaskItem task = new TaskItem();
             task.setTitle(generateTitle(result));
             task.setOriginalMessage(fullMessage);
@@ -71,12 +75,11 @@ public class NotificationService extends NotificationListenerService {
             task.setTimestamp(System.currentTimeMillis());
             task.setStatus(TaskItem.STATUS_PENDING);
 
-            // Avoid duplicates
             if (!taskDatabase.isDuplicate(fullMessage)) {
                 taskDatabase.insertTask(task);
+                TaskWidgetProvider.updateAll(this);
                 Log.d(TAG, "Task saved: " + task.getTitle());
             }
-
         } catch (Exception e) {
             Log.e(TAG, "Error processing notification", e);
         }
@@ -95,11 +98,9 @@ public class NotificationService extends NotificationListenerService {
     private String generateTitle(ClassificationResult result) {
         switch (result.getCategory()) {
             case AIClassifier.CATEGORY_BILL:
-                String amount = result.getAmount() != null ? " (" + result.getAmount() + ")" : "";
-                return "Bill Due" + amount;
+                return "Bill due" + (result.getAmount() != null ? " (" + result.getAmount() + ")" : "");
             case AIClassifier.CATEGORY_MEETING:
-                String time = result.getTime() != null ? " at " + result.getTime() : "";
-                return "Meeting" + time;
+                return "Meeting" + (result.getTime() != null ? " at " + result.getTime() : "");
             case AIClassifier.CATEGORY_REMINDER:
                 return "Reminder";
             case AIClassifier.CATEGORY_PERSONAL:
@@ -107,10 +108,5 @@ public class NotificationService extends NotificationListenerService {
             default:
                 return "Task";
         }
-    }
-
-    @Override
-    public void onNotificationRemoved(StatusBarNotification sbn) {
-        // Optional: handle removed notifications
     }
 }
