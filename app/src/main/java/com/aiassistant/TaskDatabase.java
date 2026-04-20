@@ -5,13 +5,17 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TaskDatabase extends SQLiteOpenHelper {
 
-    private static final String DB_NAME = "ai_assistant.db";
-    private static final int DB_VERSION = 1;
+    public static final String DB_NAME = "ai_assistant.db";
+    private static final int DB_VERSION = 2;
+    private static final String TAG = "TaskDatabase";
 
     // Tasks table
     private static final String TABLE_TASKS = "tasks";
@@ -41,7 +45,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + TABLE_TASKS + " (" +
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_TASKS + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_TITLE + " TEXT, " +
                 COL_MESSAGE + " TEXT, " +
@@ -56,7 +60,7 @@ public class TaskDatabase extends SQLiteOpenHelper {
                 COL_TIMESTAMP + " INTEGER, " +
                 COL_SNOOZE + " INTEGER DEFAULT 0)");
 
-        db.execSQL("CREATE TABLE " + TABLE_LEARNING + " (" +
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_LEARNING + " (" +
                 COL_LEARN_CATEGORY + " TEXT, " +
                 COL_ACTION_TYPE + " TEXT, " +
                 COL_COUNT + " INTEGER DEFAULT 0, " +
@@ -65,9 +69,13 @@ public class TaskDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TASKS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_LEARNING);
-        onCreate(db);
+        ensureSchema(db);
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        ensureSchema(db);
     }
 
     public long insertTask(TaskItem task) {
@@ -198,5 +206,53 @@ public class TaskDatabase extends SQLiteOpenHelper {
         }
         cursor.close();
         return count;
+    }
+
+    private void ensureSchema(SQLiteDatabase db) {
+        onCreate(db);
+        ensureTaskColumns(db);
+    }
+
+    private void ensureTaskColumns(SQLiteDatabase db) {
+        Set<String> existingColumns = getColumns(db, TABLE_TASKS);
+        addColumnIfMissing(db, existingColumns, COL_TITLE, "TEXT");
+        addColumnIfMissing(db, existingColumns, COL_MESSAGE, "TEXT");
+        addColumnIfMissing(db, existingColumns, COL_CATEGORY, "TEXT");
+        addColumnIfMissing(db, existingColumns, COL_APP_SOURCE, "TEXT");
+        addColumnIfMissing(db, existingColumns, COL_AMOUNT, "TEXT");
+        addColumnIfMissing(db, existingColumns, COL_DATE, "TEXT");
+        addColumnIfMissing(db, existingColumns, COL_TIME, "TEXT");
+        addColumnIfMissing(db, existingColumns, COL_ACTION, "TEXT");
+        addColumnIfMissing(db, existingColumns, COL_PRIORITY, "INTEGER DEFAULT 2");
+        addColumnIfMissing(db, existingColumns, COL_STATUS, "INTEGER DEFAULT 0");
+        addColumnIfMissing(db, existingColumns, COL_TIMESTAMP, "INTEGER");
+        addColumnIfMissing(db, existingColumns, COL_SNOOZE, "INTEGER DEFAULT 0");
+    }
+
+    private Set<String> getColumns(SQLiteDatabase db, String tableName) {
+        Set<String> columns = new HashSet<>();
+        Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
+        try {
+            int nameIndex = cursor.getColumnIndex("name");
+            while (cursor.moveToNext()) {
+                columns.add(cursor.getString(nameIndex));
+            }
+        } finally {
+            cursor.close();
+        }
+        return columns;
+    }
+
+    private void addColumnIfMissing(SQLiteDatabase db, Set<String> existingColumns,
+            String columnName, String definition) {
+        if (existingColumns.contains(columnName)) {
+            return;
+        }
+        try {
+            db.execSQL("ALTER TABLE " + TABLE_TASKS + " ADD COLUMN " + columnName + " " + definition);
+            existingColumns.add(columnName);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to add missing column: " + columnName, e);
+        }
     }
 }

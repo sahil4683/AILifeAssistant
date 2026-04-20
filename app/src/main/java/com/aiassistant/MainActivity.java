@@ -3,8 +3,10 @@ package com.aiassistant;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -15,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskActionListener {
+    private static final String TAG = "MainActivity";
 
     private RecyclerView recyclerView;
     private TaskAdapter taskAdapter;
@@ -80,10 +83,20 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
     }
 
     private void loadTasks() {
-        List<TaskItem> tasks = taskDatabase.getPendingTasks();
-        taskAdapter.setTasks(tasks);
-        emptyView.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
-        recyclerView.setVisibility(tasks.isEmpty() ? View.GONE : View.VISIBLE);
+        try {
+            List<TaskItem> tasks = taskDatabase.getPendingTasks();
+            taskAdapter.setTasks(tasks);
+            emptyView.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
+            recyclerView.setVisibility(tasks.isEmpty() ? View.GONE : View.VISIBLE);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to load tasks, resetting local database", e);
+            deleteDatabase(TaskDatabase.DB_NAME);
+            taskDatabase = new TaskDatabase(this);
+            taskAdapter.setTasks(java.util.Collections.emptyList());
+            emptyView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+            Toast.makeText(this, "App data was reset after a startup error.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void markTaskDone(TaskItem task, int position) {
