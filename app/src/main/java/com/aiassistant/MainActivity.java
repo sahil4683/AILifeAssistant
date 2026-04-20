@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
     private RecyclerView recyclerView;
     private TaskAdapter taskAdapter;
     private TaskDatabase taskDatabase;
-    private TextView emptyView;
+    private LinearLayout emptyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
