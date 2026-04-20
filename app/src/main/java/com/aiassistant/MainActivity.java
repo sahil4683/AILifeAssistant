@@ -1,10 +1,13 @@
 package com.aiassistant;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
@@ -27,15 +30,20 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        try {
+            setContentView(R.layout.activity_main);
 
-        taskDatabase = new TaskDatabase(this);
-        recyclerView = findViewById(R.id.recyclerView);
-        emptyView = findViewById(R.id.emptyView);
+            taskDatabase = new TaskDatabase(this);
+            recyclerView = findViewById(R.id.recyclerView);
+            emptyView = findViewById(R.id.emptyView);
 
-        setupRecyclerView();
-        checkNotificationPermission();
-        loadTasks();
+            setupRecyclerView();
+            checkNotificationPermission();
+            loadTasks();
+        } catch (Exception e) {
+            Log.e(TAG, "Startup crash intercepted", e);
+            showStartupFallback(e);
+        }
     }
 
     private void setupRecyclerView() {
@@ -143,6 +151,35 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.TaskA
     @Override
     protected void onResume() {
         super.onResume();
-        loadTasks();
+        if (taskDatabase != null && taskAdapter != null && recyclerView != null && emptyView != null) {
+            loadTasks();
+        }
+    }
+
+    private void showStartupFallback(Exception error) {
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        root.setPadding(48, 64, 48, 64);
+        root.setBackgroundColor(Color.WHITE);
+
+        TextView title = new TextView(this);
+        title.setText("AI Life Assistant");
+        title.setTextSize(24f);
+        title.setTextColor(Color.BLACK);
+        title.setPadding(0, 0, 0, 24);
+
+        TextView message = new TextView(this);
+        message.setText("Startup issue detected. The app stayed open in safe mode instead of closing.\n\n" +
+                error.getClass().getSimpleName() + ": " + error.getMessage());
+        message.setTextSize(16f);
+        message.setTextColor(Color.DKGRAY);
+
+        root.addView(title);
+        root.addView(message);
+        setContentView(root);
+        Toast.makeText(this, "Opened in safe mode after startup failure.", Toast.LENGTH_LONG).show();
     }
 }
